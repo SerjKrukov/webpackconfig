@@ -1,4 +1,4 @@
-//$font-stack: -apple-system, BlinkMacSystemFont,Roboto,'Open Sans','Helvetica Neue',sans-serif;
+$font-stack: -apple-system, BlinkMacSystemFont,Roboto,'Open Sans','Helvetica Neue',sans-serif;
 $fa-font-path: "~@fortawesome/fontawesome-free/webfonts";
 //$fa-font-path: "../webfonts";
 $theme-colors: (
@@ -20,7 +20,7 @@ $colors: (
 //}
 
 body {
-  //font-family: $font-stack;
+  font-family: $font-stack;
   #logo {
     width: 10rem;
   }

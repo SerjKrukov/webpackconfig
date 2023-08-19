@@ -1,11 +1,11 @@
 const path = require('path');
-const CleanPlugin = require('clean-webpack-plugin');
+const {CleanWebpackPlugin} = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
-const ImageMinPlugin = require('imagemin-webpack-plugin').default;
+const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin");
 const TerserPlugin = require('terser-webpack-plugin');
-const CssOptimizer = require('optimize-css-assets-webpack-plugin');
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 module.exports = (env, options) => {
     return {
         entry: {
@@ -18,74 +18,83 @@ module.exports = (env, options) => {
             path: path.resolve(__dirname, 'dist')
         },
         devtool: "source-map",
-        // devServer: {
-        //     // contentBase: "./dist",
-        //     // publicPath: "./dist"
-        //     inline:true,
-        // },
+        devServer: {
+            contentBase: "./dist",
+            publicPath: "./dist",
+            inline: true,
+        },
         optimization: {
-            minimize: options.mode == 'production',
+            minimize: options.mode === 'production',
             minimizer: [
                 new TerserPlugin({
                     parallel: true,
                 }),
-                new CssOptimizer({})
+                new CssMinimizerPlugin(),
+                new ImageMinimizerPlugin({
+                    minimizer: {
+                        implementation: ImageMinimizerPlugin.squooshMinify,
+                        options: {
+                            encodeOptions: {
+                                mozjpeg: {
+                                    // That setting might be close to lossless, but it’s not guaranteed
+                                    // https://github.com/GoogleChromeLabs/squoosh/issues/85
+                                    quality: 100,
+                                },
+                                webp: {
+                                    lossless: 1,
+                                },
+                                avif: {
+                                    // https://github.com/GoogleChromeLabs/squoosh/blob/dev/codecs/avif/enc/README.md
+                                    cqLevel: 0,
+                                },
+                            },
+                            // Your options for `squoosh`
+                        },
+                    },
+                }),
             ],
             splitChunks: {
                 chunks: "all",
                 minSize: 0,
+                automaticNameDelimiter: "~",
+                cacheGroups: {
+                    commons: {
+                        test: /[\\/]node_modules[\\/]/,
+                        name: 'vendors',
+                        chunks: 'all',
+                    },
+                },
             },
             usedExports: true,
-            sideEffects: true
+            sideEffects: true,
         },
         module: {
             rules: [
-                // {
-                //     test: /\.(png|jpg|gif|svg)$/,
-                //     exclude: [
-                //         path.resolve(__dirname, './node_modules'),
-                //     ],
-                //     use: {
-                //         loader: 'file-loader',
-                //         options: {
-                //             name: '[path][name]-[hash].[ext]',
-                //             outputPath: '../',
-                //             publicPath: '/dist',
-                //         },
-                //     },
-                // },
-                // {
-                //     test: /\.svg$/,
-                //     include: [
-                //         path.resolve(__dirname, './node_modules'),
-                //     ],
-                //     use: {
-                //         loader: 'svg-inline-loader',
-                //         options: {
-                //             name: '[name]-[hash].[ext]',
-                //         },
-                //     },
-                // },
                 {
-                test: /\.js$/,
-                include: path.resolve(__dirname, 'src/js'),
-                // exclude: /node_modules/,
-                use: {
-                    loader: 'babel-loader',
-                }
-            },
-
+                    test: /\.(jpe?g|png)$/i,
+                    type: "asset",
+                },
                 {
-                    test: /\.scss$/,
+                    test: /\.js$/,
+                    include: path.resolve(__dirname, 'src/js'),
+                    exclude: /node_modules/,
+                    use: {
+                        loader: 'babel-loader',
+                    }
+                },
+                {
+                    test: /\.s[ac]ss$/i,
                     include: path.resolve(__dirname, 'src/scss'),
                     use: [
-                        // {
-                        //     loader: 'style-loader'
-                        // },
+                        // Creates `style` nodes from JS strings
+                        {
+                            loader: 'style-loader'
+                        },
                         {
                             loader: MiniCssExtractPlugin.loader,
                             options: {}
                         },
+                        // Translates CSS into CommonJS
                         {
                             loader: "css-loader",
                             options: {
@@ -94,66 +103,87 @@ module.exports = (env, options) => {
                             }
                         },
                         {
-                            loader: 'postcss-loader',
+                            loader: "postcss-loader",
                             options: {
-                                plugins() {
-                                    return [
-                                        require('precss'),
-                                        require('autoprefixer')
-                                    ];
-                                }
-                            }
+                                postcssOptions: {
+                                    plugins: [
+                                        [
+                                            "postcss-preset-env",
+                                            "autoprefixer",
+                                            {
+                                                // Options
+                                            },
+                                        ],
+                                    ],
+                                },
+                            },
                         },
                         {
                             loader: "resolve-url-loader"
                         },
+                        // Compiles Sass to CSS
                         {
                             loader: "sass-loader",
                             options: {
                                 sourceMap: true,
                             }
                         }
-                    ]
+                    ],
                 },
-                {
-                    test: /\.html$/,
-                    include: path.resolve(__dirname, 'src/includes'),
-                    use: [{
-                        loader: 'raw-loader',
-                    }],
-                },
-                {
-                       test: /\.(woff|woff2|eot|ttf|otf|svg)$/,
-                    use: [{
-                        loader:'file-loader',
-                        options: {
-                            name: '[name].[ext]',
-                            outputPath: 'fonts/',
-                            publicPath: '../fonts/'
-                        }}]
-           },
-           //      {
-           //          test: /\.(ttf|eot|svg|png|woff(2)?)(\?[a-z0-9]+)?$/,
-           //          use: [{
-           //              loader: 'file-loader', options: {name: './img/[name].[ext]'}
-           //          }]
-           //      }
-           //      { test: /\.(png|woff|woff2|eot|ttf|svg)$/, loader: 'url-loader?limit=100000' }
-           //      {
-           //          test: /\.(eot|woff|woff2|ttf|svg)(\?\S*)?$/,
-           //          use: [{
-           //              loader: 'file-loader',
-           //              options: {
-           //                  name: '[name].[ext]',
-           //                  outputPath: 'Fonts/',
-           //                  publicPath: 'Fonts/'
-           //              }
-           //          }]
-           //      }
+                // {
+                //     test: /\.html$/,
+                //     loader: "html-loader",
+                //     query: {
+                //         helperDirs: [__dirname + "/includes"],
+                //     },
+                // },
+                // {
+                //     test: /\.html/,
+                //     type: 'asset/resource',
+                //     generator: {
+                //         filename: 'static/[hash][ext][query]'
+                //     }
+                // },
+                // {
+                //     test: /\.html$/,
+                //     include: path.resolve(__dirname, 'src/includes'),
+                //     use: [{
+                //         loader: 'raw-loader',
+                //     }],
+                // },
+                // {
+                //     test: /\.(woff|woff2|eot|ttf|otf|svg)$/,
+                //     use: [{
+                //         loader: 'file-loader',
+                //         options: {
+                //             name: '[name].[ext]',
+                //             outputPath: 'fonts/',
+                //             publicPath: '../fonts/'
+                //         }
+                //     }]
+                // },
+                // {
+                //     test: /\.(ttf|eot|svg|png|woff(2)?)(\?[a-z0-9]+)?$/,
+                //     use: [{
+                //         loader: 'file-loader', options: {name: './img/[name].[ext]'}
+                //     }]
+                // },
+                // {test: /\.(png|woff|woff2|eot|ttf|svg)$/, loader: 'url-loader?limit=100000'}
+                // {
+                //     test: /\.(eot|woff|woff2|ttf|svg)(\?\S*)?$/,
+                //     use: [{
+                //         loader: 'file-loader',
+                //         options: {
+                //             name: '[name].[ext]',
+                //             outputPath: 'Fonts/',
+                //             publicPath: 'Fonts/'
+                //         }
+                //     }]
+                // }
             ]
         },
         plugins: [
-            new CleanPlugin(),
+            new CleanWebpackPlugin(),
             new MiniCssExtractPlugin({
                 filename: "./css/style.bundle.css"
             }),
@@ -163,27 +193,29 @@ module.exports = (env, options) => {
                 inject: false
             }),
             new HtmlWebpackPlugin({
+                filename: 'main.html',
+                template: 'src/views/main.html',
+                sources: false
+            }),
+            new HtmlWebpackPlugin({
                 filename: 'second.html',
                 template: 'src/views/second.html',
                 inject: false
             }),
-            new CopyPlugin([
+            new CopyPlugin(
                 {
-                    from: "./src/favicon",
-                    to: "./favicon"
-                },
-                {
-                    from: "./src/img",
-                    to: "./img"
-                },
-            ]),
-            new ImageMinPlugin({
-                test: /\.(jpe?g|png|gif|svg)$/i,
-                disable: options.mode !== 'production',
-                pngquant: {
-                    quality: '85-90'
-                }
-            }),
+                    patterns: [
+                        {
+                            from: "./src/favicon",
+                            to: "./favicon"
+                        },
+                        {
+                            from: "./src/img",
+                            to: "./img"
+                        },
+                    ]
+                }),
+
         ]
     };
 }
