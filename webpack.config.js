@@ -134,27 +134,6 @@ module.exports = (env, options) => {
                     loader: 'handlebars-loader'
                 },
                 // {
-                //     test: /\.html$/,
-                //     loader: "html-loader",
-                //     query: {
-                //         helperDirs: [__dirname + "/includes"],
-                //     },
-                // },
-                // {
-                //     test: /\.html/,
-                //     type: 'asset/resource',
-                //     generator: {
-                //         filename: 'static/[hash][ext][query]'
-                //     }
-                // },
-                // {
-                //     test: /\.html$/,
-                //     include: path.resolve(__dirname, 'src/includes'),
-                //     use: [{
-                //         loader: 'raw-loader',
-                //     }],
-                // },
-                // {
                 //     test: /\.(woff|woff2|eot|ttf|otf|svg)$/,
                 //     use: [{
                 //         loader: 'file-loader',
