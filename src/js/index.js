@@ -1,6 +1,6 @@
 import $ from 'jquery';
 
-import bootstrap from 'bootstrap';
+// import bootstrap from 'bootstrap';
 import '../scss/main.scss';
 $(function() {
     $('body').css('color', 'blue');

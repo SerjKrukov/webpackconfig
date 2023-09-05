@@ -17,11 +17,10 @@ module.exports = (env, options) => {
             filename: 'js/[name].bundle.js',
             path: path.resolve(__dirname, 'dist')
         },
-        devtool: "source-map",
+        devtool: "inline-source-map",
         devServer: {
-            contentBase: "./dist",
-            publicPath: "./dist",
-            inline: true,
+            static: "./dist",
+            port: 8080,
         },
         optimization: {
             minimize: options.mode === 'production',
