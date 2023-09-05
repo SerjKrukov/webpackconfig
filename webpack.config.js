@@ -129,6 +129,10 @@ module.exports = (env, options) => {
                         }
                     ],
                 },
+                {
+                    test: /\.hbs$/,
+                    loader: 'handlebars-loader'
+                },
                 // {
                 //     test: /\.html$/,
                 //     loader: "html-loader",
@@ -187,19 +191,12 @@ module.exports = (env, options) => {
                 filename: "./css/style.bundle.css"
             }),
             new HtmlWebpackPlugin({
+                template: path.join(__dirname, 'src', 'views', 'index.hbs'),
                 filename: 'index.html',
-                template: 'src/views/index.html',
-                inject: false
-            }),
-            new HtmlWebpackPlugin({
-                filename: 'main.html',
-                template: 'src/views/main.html',
-                sources: false
             }),
             new HtmlWebpackPlugin({
                 filename: 'second.html',
-                template: 'src/views/second.html',
-                inject: false
+                template: 'src/views/second.hbs',
             }),
             new CopyPlugin(
                 {

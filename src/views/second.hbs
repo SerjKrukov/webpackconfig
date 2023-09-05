@@ -1,8 +1,4 @@
-<% var data = {
-title: "Заголовок | Second",
-author: "Harrix"
-}; %>
-<%= _.template(require('./../includes/head.html').default)(data) %>
+{{> common/head title="passed page title"}}
 <p>
     Lorem ipsum dolor sit amet, consectetur adipisicing elit. Atque corporis ipsum nam? Explicabo id numquam officiis porro
     quo similique? Aut blanditiis distinctio ducimus eligendi impedit sapiente ut? Fuga, molestiae officiis.
@@ -43,4 +39,11 @@ author: "Harrix"
 <p>
     <i class="fab fa-500px"></i>
 </p>
-<%= _.template(require('./../includes/scripts.html').default)(data) %>
+<p class="bg-crimson">
+    run server
+</p>
+<p class="text-crimson border-crimson border">
+    run server
+</p>
+<img src="./img/image.png" alt="">
+{{> common/scripts}}
