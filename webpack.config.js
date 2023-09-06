@@ -91,7 +91,9 @@ module.exports = (env, options) => {
                         },
                         {
                             loader: MiniCssExtractPlugin.loader,
-                            options: {}
+                            options: {
+                                esModule: false,
+                            },
                         },
                         // Translates CSS into CommonJS
                         {
@@ -118,7 +120,10 @@ module.exports = (env, options) => {
                             },
                         },
                         {
-                            loader: "resolve-url-loader"
+                            loader: "resolve-url-loader",
+                            options: {
+                                sourceMap: true
+                            }
                         },
                         // Compiles Sass to CSS
                         {
