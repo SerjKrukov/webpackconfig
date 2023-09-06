@@ -138,6 +138,10 @@ module.exports = (env, options) => {
                     test: /\.hbs$/,
                     loader: 'handlebars-loader'
                 },
+                {
+                    test: /\.(woff|woff2|eot|ttf|otf)$/i,
+                    type: 'asset/resource',
+                },
                 // {
                 //     test: /\.(woff|woff2|eot|ttf|otf|svg)$/,
                 //     use: [{
@@ -194,8 +198,8 @@ module.exports = (env, options) => {
                             to: "./img"
                         },
                     ]
-                }),
-
+                }
+            ),
         ]
     };
 }
